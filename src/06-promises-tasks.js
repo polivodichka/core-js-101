@@ -98,8 +98,15 @@ async function getFastestPromise(array) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+async function chainPromises(array, action) {
+  const result = [];
+  const arr = Promise.resolve(array);
+  return arr.then((resolvedArr) => {
+    resolvedArr.forEach((el) => {
+      el.then((val) => result.push(val));
+    });
+  })
+    .then(() => result.reduce((a, b) => action(a, b)));
 }
 
 module.exports = {
