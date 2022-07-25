@@ -112,70 +112,100 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
-  result: '',
+class Selector {
+  constructor() {
+    this.prevId = 0;
+    this.currentId = 0;
+    this.result = '';
+  }
 
-  element(value) {
-    this.throwErr(1);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 1;
-    obj.result = this.result + value;
-    return obj;
-  },
+  element(val) {
+    [this.prevId, this.currentId] = [this.currentId, 1];
+    this.throwError();
+    this.result += val;
+    return this;
+  }
 
-  id(value) {
-    this.throwErr(2);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 2;
-    obj.result = `${this.result}#${value}`;
-    return obj;
-  },
+  id(val) {
+    [this.prevId, this.currentId] = [this.currentId, 2];
+    this.throwError();
+    this.result += `#${val}`;
+    return this;
+  }
 
-  class(value) {
-    this.throwErr(3);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 3;
-    obj.result = `${this.result}.${value}`;
-    return obj;
-  },
+  class(val) {
+    [this.prevId, this.currentId] = [this.currentId, 3];
+    this.throwError();
+    this.result += `.${val}`;
+    return this;
+  }
 
-  attr(value) {
-    this.throwErr(4);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 4;
-    obj.result = `${this.result}[${value}]`;
-    return obj;
-  },
+  attr(val) {
+    [this.prevId, this.currentId] = [this.currentId, 4];
+    this.throwError();
+    this.result += `[${val}]`;
+    return this;
+  }
 
-  pseudoClass(value) {
-    this.throwErr(5);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 5;
-    obj.result = `${this.result}:${value}`;
-    return obj;
-  },
+  pseudoClass(val) {
+    [this.prevId, this.currentId] = [this.currentId, 5];
+    this.throwError();
+    this.result += `:${val}`;
+    return this;
+  }
 
-  pseudoElement(value) {
-    this.throwErr(6);
-    const obj = Object.create(cssSelectorBuilder);
-    obj.throwErrId = 6;
-    obj.result = `${this.result}::${value}`;
-    return obj;
-  },
+  pseudoElement(val) {
+    [this.prevId, this.currentId] = [this.currentId, 6];
+    this.throwError();
+    this.result += `::${val}`;
+    return this;
+  }
 
   combine(selector1, combinator, selector2) {
-    const obj = Object.create(cssSelectorBuilder);
-    obj.result = `${selector1.result} ${combinator} ${selector2.result}`;
-    return obj;
-  },
+    this.result = `${selector1.result} ${combinator} ${selector2.result}`;
+    return this;
+  }
 
   stringify() {
     return this.result;
+  }
+
+  throwError() {
+    if (this.prevId === this.currentId && (this.currentId === 1 || this.currentId === 2 || this.currentId === 6)) { throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector'); }
+    if (this.prevId > this.currentId) { throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'); }
+  }
+}
+const cssSelectorBuilder = {
+  element(val) {
+    return new Selector().element(val);
   },
 
-  throwErr(throwErrId) {
-    if (this.throwErrId > throwErrId) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
-    if (this.throwErrId === throwErrId && (throwErrId === 1 || throwErrId === 2 || throwErrId === 6)) throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+  id(val) {
+    return new Selector().id(val);
+  },
+
+  class(val) {
+    return new Selector().class(val);
+  },
+
+  attr(val) {
+    return new Selector().attr(val);
+  },
+
+  pseudoClass(val) {
+    return new Selector().pseudoClass(val);
+  },
+
+  pseudoElement(val) {
+    return new Selector().pseudoElement(val);
+  },
+
+  combine(selector1, combinator, selector2) {
+    return new Selector().combine(selector1, combinator, selector2);
+  },
+
+  stringify() {
+    return new Selector().stringify();
   },
 };
 
